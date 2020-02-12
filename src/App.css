@@ -22,7 +22,7 @@
   display: block;
   position: fixed;
   top: 10vh;
-  background-color: #E0D3AF;
+  background-color: whitesmoke;
 }
 
 .App-link {
@@ -68,21 +68,26 @@ button.authUI {
 }
 
 .storyListItem {
-  background-color: lightgoldenrodyellow;
+  background-color: lightgrey;
   padding: 5px;
   padding-left: 10px;
+  margin: 10px;
   margin-bottom: 5px;
 }
 
 .storyListItem:hover {
-  background-color: palegoldenrod;
+  background-color: darkslategrey;
+  color: white;
 }
 
 .BackButton {
-  background-color: darkblue;
+  background-color: #444444;
   color: white;
+  font-weight: bold;
   border: none;
   border-radius: 100px;
+  margin-right: 10px;
+  height: 30px;
 }
 
 .AddTileButton {
@@ -93,7 +98,7 @@ button.authUI {
   bottom: 2vmin;
   right: 2vmin;
   font-size: 2em;
-  background-color: darkblue;
+  background-color: #282C34;
   color: white;
   border: none;
   border-radius: 100px;

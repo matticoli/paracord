@@ -30,7 +30,7 @@ class EditPageView extends Component {
             [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
             [{ 'font': [] }],
             [{ 'align': [] }],
-            ['link', 'image'],
+            ['link', 'image', 'custom'],
 
             ['clean']                                         // remove formatting button
         ];

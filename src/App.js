@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
+
 import './App.css';
 
 import EditPageView from './EditPageView'
 
 import fb from './firebase.js';
 import LineTo from "react-lineto";
+import { Avatar, Divider, Drawer, IconButton, List, ListItem, ListSubheader, ListItemText } from '@material-ui/core';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import Draggable, {DraggableCore} from 'react-draggable';
+
 
 class App extends Component {
 
@@ -20,8 +25,6 @@ class App extends Component {
 
   handleLoginClicked() {
     fb.showAuthPopup();
-    //TODO: Fix this bs with database rules
-
   }
 
   handleLogoutClicked() {
@@ -62,7 +65,7 @@ class App extends Component {
 
   handleTileDragStart(event) {
     // Don't show ghost on drag
-      event.dataTransfer.setDragImage(new Image(0, 0), 0, 0);
+      // event.dataTransfer.setDragImage(new Image(0, 0), 0, 0);
   }
 
   handleTileDrag(event, page) {
@@ -101,7 +104,6 @@ class App extends Component {
   }
 
   addStory() {
-
       const users = {};
       users[this.state.user.uid] = "rwa";
 
@@ -118,15 +120,6 @@ class App extends Component {
       fb.initialize(this.handleUserAuth.bind(this));
     }
     console.log("Will bind..");
-
-    // if(!this.state.user) {
-    //     return;
-    // }
-    // fb.base.bindCollection(`Stories`, {
-    //     context: this,
-    //     state: 'stories',
-    //     withRefs: true
-    // });
   }
 
   render() {
@@ -134,7 +127,7 @@ class App extends Component {
 
     let authUI = this.state.user ? (
         <div>
-          <img className="authUI" onClick={this.handleLogoutClicked} src={this.state.user.photoURL} />
+          <img alt="user" className="authUI" onClick={this.handleLogoutClicked} src={this.state.user.photoURL} />
         </div>
     ) : (
         <div>
@@ -166,33 +159,32 @@ class App extends Component {
             {this.state.pages.map( page => {
               let styles = {
                 position: "absolute",
-                width: '100px',
-                height: '100px',
+                width: '110px',
+                height: '110px',
                 padding: '5px',
-                top: 'calc(10vh + '+page.y+"px)",
-                left: page.x+"px",
                 backgroundColor: page.color || 'white',
                 overflow: 'hidden',
                   zIndex: 10,
               };
 
-                  console.log(page.ref.path);
+              console.log(page.ref.path);
               return (
-                  <div key={page.ref.path}
-                       className={page.ref.path.substring(page.ref.path.lastIndexOf("/")+1)}
-                       draggable="true"
-                       onDrag={event => {this.handleTileDrag(event, page)}}
-                       onDragStart={event => {this.handleTileDragStart(event)}}
-                       onDragEnd={event => {this.handleTileRelease(event, page)}}
-                       onClick={() => {this.handlePageSelect(page)}}
-                       style={styles}>
-                    <h5>{page.title}</h5>
-                    <p>{page.ref.path.substring(page.ref.path.lastIndexOf("/")+1)}</p>
-                  </div>
+                  <Draggable position={{x: page.x, y: page.y}}
+                              onDrag={(evt) => {
+                                this.handleTileDrag(evt, page)
+                              }}
+                              onClick={() => {this.handlePageSelect(page)}}
+                              onDragStart={this.handleTileDragStart.bind(this)}>
+                    <div key={page.ref.path}
+                        className={page.ref.path.substring(page.ref.path.lastIndexOf("/")+1)}
+                        style={styles}>
+                      <h5>{page.title}</h5>
+                      <p>{page.ref.path.substring(page.ref.path.lastIndexOf("/")+1)}</p>
+                      <button onClick={() => {this.handlePageSelect(page)}}>Edit</button>
+                    </div>
+                  </Draggable>
               )
             })}
-            <LineTo from="IrKYmclgh80Hpf42rWQk"
-                    to="rTO5188xnem2HaxKoqbr" />
             <button className="AddTileButton" onClick={() => {this.addTile()}}>+</button>
         </div>
     );
@@ -204,21 +196,21 @@ class App extends Component {
 
     return (
       <div className="App">
-        <header className="App-header">
-          <h5>
-              <button className="BackButton"
-                      hidden={this.state.selectedStory === null}
-                      onClick={() => {this.handleStorySelected(null); this.handlePageSelect(null);}}> {"<<"}
-                      </button>
-              Paracord <span><i>[beta]</i></span>
-          </h5>
-            {authUI}
-        </header>
-        <div className="App-content">
-          {editView || pagesTiles || storiesList}
+          <header className="App-header">
+            <h5>
+                <button className="BackButton"
+                        hidden={this.state.selectedStory === null}
+                        onClick={() => {this.handleStorySelected(null); this.handlePageSelect(null);}}> {"< Story List"}
+                        </button>
+                Paracord Engine <span><i>[beta]</i></span>
+            </h5>
+              {authUI}
+          </header>
+          <div className="App-content">
+            {editView || pagesTiles || storiesList}
 
+          </div>
         </div>
-      </div>
     );
   }
 }
