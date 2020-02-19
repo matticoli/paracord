@@ -4,6 +4,8 @@ import ReactQuill from 'react-quill'; // ES6
 import 'react-quill/dist/quill.snow.css'; // ES6
 
 import fb from './firebase.js';
+import Button from "@material-ui/core/Button";
+import {Input} from "@material-ui/core";
 
 class EditPageView extends Component {
 
@@ -37,8 +39,6 @@ class EditPageView extends Component {
 
         this.modules = {
             'toolbar': toolbarOptions,
-            // 'image-tooltip': true,
-            // 'link-tooltip': true
         }
     }
 
@@ -88,21 +88,21 @@ class EditPageView extends Component {
 
         return (<div>
             <div className="EditToolbar">
-                <button onClick={this.props.returnFunc}>Back</button>
-                <button style={{backgroundColor: "red"}}
-                        onClick={this.handleDelete.bind(this)}>Delete</button>
+                <Button onClick={this.props.returnFunc}>Back</Button>
+                <Button style={{backgroundColor: "red"}}
+                        onClick={this.handleDelete.bind(this)}>Delete</Button>
                 <label>Page Title: </label>
-                <input className="EditBarInput"
+                <Input className="EditBarInput"
                        type="text"
                        defaultValue={this.state.pageData.title || "white"}
                        onChange = {this.handleTitleChange.bind(this)} />
                 <label>Tile Color: </label>
                 <input className="EditBarInput"
-                       type="text"
+                       type="color"
                        defaultValue={this.state.pageData.color || "white"}
                        onChange = {this.handleColorChange.bind(this)} />
                 <label>Page ID (For Linking): </label>
-                <input className="EditBarInput"
+                <Input className="EditBarInput"
                        readOnly="true"
                        type="text"
                        value={puid} />

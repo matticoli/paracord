@@ -1,28 +1,10 @@
+body {
+  width: 100%;
+}
+
 .App {
   text-align: left;
-}
-
-.App-header {
-  background-color: #282c34;
-  height: 10vh;
-  width: 100vw;
-  display: block;
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  font-size: calc(10px + 2vmin);
-  line-height: 0;
-  color: white;
-  padding-left: 3vw;
-}
-
-.App-content {
-  height: 90vh;
-  width: 100vw;
-  display: block;
-  position: fixed;
-  top: 10vh;
-  background-color: whitesmoke;
+  width: 100%;
 }
 
 .App-link {
@@ -68,11 +50,12 @@ button.authUI {
 }
 
 .storyListItem {
+  border-radius: 12px;
   background-color: lightgrey;
-  padding: 5px;
-  padding-left: 10px;
-  margin: 10px;
-  margin-bottom: 5px;
+  /*padding: 5px 5px 10px 10px;*/
+  /*margin: 10px;*/
+  border: 8px solid white;
+  width: 50vw;
 }
 
 .storyListItem:hover {
