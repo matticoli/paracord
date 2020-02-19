@@ -1,226 +1,439 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
+
 import './App.css';
 
 import EditPageView from './EditPageView'
 
 import fb from './firebase.js';
-import LineTo from "react-lineto";
+import MenuIcon from '@material-ui/icons/Menu';
+import {createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
+import Draggable from 'react-draggable';
+import AppBar from "@material-ui/core/AppBar";
+import {
+    Avatar,
+    CardActions, CardHeader,
+    Divider,
+    Drawer,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    ListSubheader
+} from '@material-ui/core';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
+import Helpicon from '@material-ui/icons/Help';
+import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import withStyles from "@material-ui/core/styles/withStyles";
+
+import genericUserPhoto from './generic-user.jpg';
+import Fab from "@material-ui/core/Fab";
+import Card from "@material-ui/core/Card";
+import {CardText, CardTitle} from "material-ui";
+import Button from "@material-ui/core/Button";
+
+const theme = createMuiTheme({
+    typography: {
+        useNextVariants: true,
+    },
+    palette: {
+        primary: {
+            main: '#222222',
+            text: '#ffffff'
+        }
+    },
+});
+
+
+const styles = {
+    root: {
+        flexGrow: 1,
+        fontFamily: "Sans-Serif",
+    },
+    grow: {
+        flexGrow: 1,
+        padding: 5,
+        marginLeft: 10,
+    },
+    drawer: {
+        minWidth: 200,
+    },
+    avatarName: {
+        fontWeight: 'bold',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        textAlign: 'center',
+    },
+    bigAvatar: {
+        margin: 10,
+        width: 80,
+        height: 80,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+    },
+    icon: {
+        height: 35,
+        width: 35,
+    },
+    list: {
+        width: 'auto',
+    },
+    fullList: {
+        width: 'auto',
+    },
+    menuButton: {
+        marginLeft: -12,
+        marginRight: 20,
+        height: 50,
+        width: 50,
+    },
+    accountButton: {
+        backgroundColor: "#A10C32",
+        display: 'inline-block',
+        height: 40,
+        padding: 5,
+        verticalAlign: 'middle'
+    },
+    accountButtonText: {
+        display: 'inline-block',
+        height: 40,
+        paddingLeft: 5,
+        paddingRight: 5,
+        verticalAlign: 'middle'
+    },
+    accountButtonImg: {
+        height: 30
+    },
+    backButton: {
+        backgroundColor: "#a02c49"
+    }
+};
 
 class App extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      user: null,
-      stories: [],
-      selectedStory: null,
-      selectedPage: null,
+    constructor(props) {
+        super(props);
+        this.state = {
+            drawerOpen: false,
+            showHelp: false,
+            user: null,
+            stories: [],
+            users: [],
+            selectedStory: null,
+            selectedPage: null,
+        }
     }
-  }
 
-  handleLoginClicked() {
-    fb.showAuthPopup();
-    //TODO: Fix this bs with database rules
+    toggleDrawer(event) {
+        if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
 
-  }
+        this.setState({drawerOpen: !this.state.drawerOpen});
+    };
 
-  handleLogoutClicked() {
-    if(!window.confirm("Sign out?")) {
-      return;
+    toggleHelpDialog() {
+        this.setState({
+            showHelp: !this.state.showHelp
+        });
     }
-    fb.auth.signOut();
-    window.location.reload(true);
 
-  }
+    handleLoginClicked() {
+        fb.showAuthPopup();
+    }
 
-  handleUserAuth(user) {
-    this.setState({user: user});
-    if(user) {
-        fb.base.bindCollection(`Stories`, {
+	handleUserAuth(user) {
+		this.setState({user: user});
+		if (user) {
+			fb.base.bindCollection(`Stories`, {
+				context: this,
+				state: 'stories',
+				withRefs: true
+			});
+
+			fb.base.bindCollection(`Users`, {
+				context: this,
+				state: 'users',
+				withRefs: true,
+			});
+		}
+	}
+
+	handleUserSignOut() {
+		if (!window.confirm("Sign out of " + this.state.user.displayName + "?")) {
+			return;
+		}
+		this.setState({user: null});
+		fb.auth.signOut();
+	}
+
+    handleStorySelected(story) {
+        if (this.state.selectedStory) {
+            //TODO: Remove binding
+            //fb.base.removeBinding()
+        }
+        this.setState({selectedStory: story});
+        if (!story) {
+            return;
+        }
+        fb.base.bindCollection(story.ref.collection('Pages'), {
             context: this,
-            state: 'stories',
+            state: 'pages',
             withRefs: true
         });
     }
-  }
 
-  handleStorySelected(story) {
-    if(this.state.selectedStory) {
-      //TODO: Remove binding
-      //fb.base.removeBinding()
+    handleTileDragStart(event) {
+        // Do nothing
     }
-    this.setState({selectedStory: story});
-    if(!story) {
-        return;
+
+    handleTileDrag(event, page) {
+        let pagesNew = this.state.pages;
+        if (event.pageX === 0 && event.pageY === 0) {
+            return;
+        }
+        pagesNew[this.state.pages.indexOf(page)].x = event.pageX;
+        pagesNew[this.state.pages.indexOf(page)].y = event.pageY - 50;
+        this.setState({
+            pages: pagesNew
+        })
     }
-    fb.base.bindCollection(story.ref.collection('Pages'), {
-      context: this,
-      state: 'pages',
-      withRefs: true
-    });
-  }
 
-  handleTileDragStart(event) {
-    // Don't show ghost on drag
-      event.dataTransfer.setDragImage(new Image(0, 0), 0, 0);
-  }
-
-  handleTileDrag(event, page) {
-    let pagesNew = this.state.pages;
-    if(event.pageX === 0 && event.pageY === 0) {
-      return;
+    handleTileRelease(event, page) {
+        page.ref.set({
+            x: event.pageX < 0 ? 0 : event.pageX,
+            y: event.pageY - 200 < 0 ? 0 : event.pageY - 200,
+        }, {merge: true});
     }
-    pagesNew[this.state.pages.indexOf(page)].x = event.pageX;
-    pagesNew[this.state.pages.indexOf(page)].y = event.pageY - 200;
-    this.setState({
-        pages: pagesNew
-    })
-  }
 
-  handleTileRelease(event, page) {
-      page.ref.set({
-          x: event.pageX < 0 ? 0 : event.pageX,
-          y: event.pageY - 200 < 0 ? 0 : event.pageY - 200,
-      }, {merge: true});
-  }
-
-  handlePageSelect(page) {
-    this.setState({
-        selectedPage: page,
-    });
-  }
-
-  addTile() {
-      this.state.selectedStory.ref.collection('Pages').add({
-        title: window.prompt("Enter Page Title:") || "New Page",
-        x: 300,
-        y: 300,
-        deltas: "{}",
-        editing: null,
-    });
-  }
-
-  addStory() {
-
-      const users = {};
-      users[this.state.user.uid] = "rwa";
-
-      fb.db.collection('Stories').add({
-          title: window.prompt("Enter story name:") || "My Story",
-          description: window.prompt("Enter story description:"),
-          public: false,
-          users: users,
-      });
-  }
-
-  componentWillMount() {
-    if(!fb.app) {
-      fb.initialize(this.handleUserAuth.bind(this));
+    handlePageSelect(page) {
+        this.setState({
+            selectedPage: page,
+        });
     }
-    console.log("Will bind..");
 
-    // if(!this.state.user) {
-    //     return;
-    // }
-    // fb.base.bindCollection(`Stories`, {
-    //     context: this,
-    //     state: 'stories',
-    //     withRefs: true
-    // });
-  }
+    addTile() {
+        this.state.selectedStory.ref.collection('Pages').add({
+            title: window.prompt("Enter Page Title:") || "New Page",
+            x: 300,
+            y: 300,
+            deltas: "{}",
+            editing: null,
+        });
+    }
 
-  render() {
+    addStory() {
+        const users = {};
+        users[this.state.user.uid] = "rwa";
+
+        let title, description;
+        title = window.prompt("Enter story name:");
+        if(title) description = window.prompt("Enter story description:");
+
+        if(!title || !description) {
+            return;
+        }
+
+        fb.db.collection('Stories').add({
+            title: title,
+            description: description,
+            public: false,
+            users: users,
+        });
+    }
+
+    componentWillMount() {
+        if (!fb.app) {
+            fb.initialize(this.handleUserAuth.bind(this));
+        }
+        console.log("Will bind..");
+    }
+
+    render() {
+
+        const classes = this.props.classes;
+
+        let loginButton = this.state.user ? (
+            <ListItem button color="inherit"
+                      onClick={this.handleUserSignOut.bind(this)}>
+                <ExitToAppIcon/>
+                <ListItemText primary="Sign Out"></ListItemText>
+            </ListItem>
+        ) : (
+            <ListItem button color="inherit"
+                      onClick={() => {
+                          return this.handleLoginClicked()
+                      }}>
+                <LockOpenIcon/>
+                <ListItemText primary="Sign In With Google"></ListItemText>
+            </ListItem>
+
+        );
+
+        let userDetail = this.state.user ? (
+            <div>
+                <Avatar
+                    alt={(this.state.user && this.state.user.name) || "Unnamed User"}
+                    src={(this.state.user && this.state.user.photoURL) || genericUserPhoto}
+                    className={classes.bigAvatar}/>
+                <ListSubheader className={classes.avatarName}>{this.state.user.displayName} </ListSubheader>
+            </div>
+        ) : (
+            <div>
+                <Avatar
+                    alt={"No User"}
+                    src={(this.state.user && this.state.user.photoURL) || genericUserPhoto}
+                    className={classes.bigAvatar}/>
+                <ListSubheader className={classes.avatarName}>{"Not Signed In"} </ListSubheader>
+            </div>
+        );
+
+        let authUI = this.state.user ? (
+            <div>
+                <img alt="user" className="authUI" onClick={this.handleLogoutClicked} src={this.state.user.photoURL}/>
+            </div>
+        ) : (
+            <div>
+                <button className="authUI" onClick={this.handleLoginClicked.bind(this)}>Login</button>
+            </div>
+        );
+
+        let storiesList = this.state.selectedStory !== null ? (<div/>) : (
+            <List>
+                <ListSubheader style={{backgroundColor: 'whitesmoke'}}><h2>My Stories</h2>
+                    <Fab style={{position: "absolute", right: 50, top: 5}} size="large" color="primary" onClick={() => {
+                        this.addStory()
+                    }}>
+                        <AddIcon />
+                    </Fab>
+                </ListSubheader>
+                {this.state.stories.map((story) => {
+                    return (
+                        <ListItem className="storyListItem"
+                             key={story.ref.path}
+                             onClick={() => {
+                                 this.handleStorySelected(story)
+                             }}>
+                            <ListItemText>
+                                <h3>{story.title}</h3>
+                                <p>{story.description}</p>
+                            </ListItemText>
+                        </ListItem>
+                    );
+                })}
+            </List>
+        );
 
 
-    let authUI = this.state.user ? (
-        <div>
-          <img className="authUI" onClick={this.handleLogoutClicked} src={this.state.user.photoURL} />
-        </div>
-    ) : (
-        <div>
-            <button className="authUI" onClick={this.handleLoginClicked.bind(this)} >Login</button>
-        </div>
-    );
+        //TODO: size container to content
+        let pagesTiles = this.state.selectedStory && this.state.pages && (
+            <div className="pageTileContainer">
+                <Button onClick={() => {
+                    this.setState({selectedStory: null, pages: []})
+                }}>Back to Stories</Button>
+                {this.state.pages.map(page => {
+                    let styles = {
+                        // position: "absolute",
+                        width: '180px',
+                        height: '120px',
+                        padding: '8px',
+                        borderTop: '8px solid ' + (page.color || 'white'),
+                        // overflow: 'hidden',
+                        // zIndex: 10,
+                    };
 
-    let storiesList = this.state.selectedStory !== null ? (<div />) : (
-        <div>
-            {this.state.stories.map((story) => {
-                return (
-                    <div className="storyListItem"
-                         key={story.ref.path}
-                         onClick={() => {this.handleStorySelected(story)} }>
-                      <h5>{story.title}</h5>
-                      <p>{story.description}</p>
+                    let title = page.title && page.title.substr(0, 30) +
+                        (page.title.length > 30 ? "..." : "");
+                    return (
+                        <Draggable key={page.ref.path}
+                                   position={{x: page.x, y: page.y}}
+                                   onDrag={(evt) => {
+                                       this.handleTileDrag.bind(this)(evt, page)
+                                   }}
+                                   onClick={() => {
+                                       this.handlePageSelect(page)
+                                   }}
+                                   onDragStart={this.handleTileDragStart.bind(this)}>
+                            <Card className={page.ref.path.substring(page.ref.path.lastIndexOf("/") + 1)}
+                                 style={styles}>
+                                <h3>{title || "No Title"}</h3>
+                                <CardActions>
+                                    <Button onClick={() => {
+                                        this.handlePageSelect(page)
+                                    }} size="small"><EditIcon />Edit</Button>
+                                    <Button disabled onClick={() => {
+                                        this.handlePageSelect(page)
+                                    }} size="small"><Helpicon />Preview</Button>
+                                    <br />
+                                </CardActions>
+                            </Card>
+                        </Draggable>
+                    )
+                })}
+                <button className="AddTileButton" onClick={() => {
+                    this.addTile()
+                }}>+
+                </button>
+            </div>
+        );
+
+        let editView = this.state.selectedPage ? (
+            <EditPageView pageData={this.state.selectedPage}
+                          returnFunc={() => this.handlePageSelect(null)}/>
+        ) : undefined;
+
+        return (
+            <div className="App">
+                <MuiThemeProvider theme={theme}>
+                    <AppBar position="static">
+                        <Toolbar>
+                            <IconButton className={classes.menuButton} color="inherit" aria-label="menu"
+                                        onClick={this.toggleDrawer.bind(this)}>
+                                <MenuIcon className={classes.icon}/>
+                            </IconButton>
+                            <div className={classes.grow}>
+                                <Typography variant="h5" align="left" color="inherit">
+                                    <b>Paracord Engine</b><sup> beta</sup>
+                                </Typography>
+                            </div>
+                        </Toolbar>
+                    </AppBar>
+                    <Drawer className={classes.drawer} open={this.state.drawerOpen}
+                            onClose={this.toggleDrawer.bind(this)}>
+                        {userDetail}
+                        <List className={classes.drawer}>
+                            <Divider/>
+                            {loginButton}
+                            <ListItem button
+                                      size="small"
+                                      color='inherit'
+                                      aria-label="Upload"
+                                      onClick={this.toggleHelpDialog.bind(this)}>
+                                <Helpicon/>
+                                <ListItemText primary={"Help"}></ListItemText>
+                            </ListItem>
+                        </List>
+                        <div style={{"width": "1vw"}}></div>
+                        <div>
+                            <br/>
+                        </div>
+                    </Drawer>
+                    <div className="App-content">
+						{this.state.user && (editView || pagesTiles || storiesList) || (
+                            <h3 style={{marginLeft: 30}}><ArrowUpwardIcon /> Please Sign in to continue</h3>
+                        )}
+
                     </div>
-                );
-            })}
-            <button className="AddTileButton" onClick={() => {this.addStory()}}>+</button>
-        </div>
-    );
+                </MuiThemeProvider>
 
-
-
-    //TODO: size container to content
-    let pagesTiles = this.state.selectedStory && this.state.pages && (
-        <div className="pageTileContainer">
-            {this.state.pages.map( page => {
-              let styles = {
-                position: "absolute",
-                width: '100px',
-                height: '100px',
-                padding: '5px',
-                top: 'calc(10vh + '+page.y+"px)",
-                left: page.x+"px",
-                backgroundColor: page.color || 'white',
-                overflow: 'hidden',
-                  zIndex: 10,
-              };
-
-                  console.log(page.ref.path);
-              return (
-                  <div key={page.ref.path}
-                       className={page.ref.path.substring(page.ref.path.lastIndexOf("/")+1)}
-                       draggable="true"
-                       onDrag={event => {this.handleTileDrag(event, page)}}
-                       onDragStart={event => {this.handleTileDragStart(event)}}
-                       onDragEnd={event => {this.handleTileRelease(event, page)}}
-                       onClick={() => {this.handlePageSelect(page)}}
-                       style={styles}>
-                    <h5>{page.title}</h5>
-                    <p>{page.ref.path.substring(page.ref.path.lastIndexOf("/")+1)}</p>
-                  </div>
-              )
-            })}
-            <LineTo from="IrKYmclgh80Hpf42rWQk"
-                    to="rTO5188xnem2HaxKoqbr" />
-            <button className="AddTileButton" onClick={() => {this.addTile()}}>+</button>
-        </div>
-    );
-
-    let editView = this.state.selectedPage ? (
-        <EditPageView pageData={this.state.selectedPage}
-                      returnFunc={() => this.handlePageSelect(null)}/>
-    ) : undefined;
-
-    return (
-      <div className="App">
-        <header className="App-header">
-          <h5>
-              <button className="BackButton"
-                      hidden={this.state.selectedStory === null}
-                      onClick={() => {this.handleStorySelected(null); this.handlePageSelect(null);}}> {"<<"}
-                      </button>
-              Paracord <span><i>[beta]</i></span>
-          </h5>
-            {authUI}
-        </header>
-        <div className="App-content">
-          {editView || pagesTiles || storiesList}
-
-        </div>
-      </div>
-    );
-  }
+            </div>
+        );
+    }
 }
 
-export default App;
+export default withStyles(styles)(App);
+;

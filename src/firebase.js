@@ -24,17 +24,8 @@ const fb = {
     fb.auth.onAuthStateChanged(function(user) {
       if (user) {
         callback(user);
-        // User is signed in.
-        // console.log(user);
-        // fb.user = {
-        //   displayName: user.displayName,
-        //   email: user.email,
-        //   photoURL: user.photoURL,
-        //   uid: user.uid,
-        // }
       } else {
         callback(null);
-        // fb.user = null;
       }
     });
   },
@@ -44,8 +35,6 @@ const fb = {
 
     var provider = new firebase.auth.GoogleAuthProvider();
     this.auth.signInWithPopup(provider).then(function(result) {
-      // User signed in!
-      // this.user.uid = result.user.uid;
       this.user = result.user;
       console.log(this.user);
     }).catch(function(error) {
