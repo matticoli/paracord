@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a3d0939d-8a3a-4d02-9fd5-b4fab3464dce" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/generic-user.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/EditPageView.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/EditPageView.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,11 +20,6 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="952" />
-    <option name="width" value="977" />
-    <option name="height" value="1038" />
   </component>
   <component name="ProjectId" id="1Y0vl434BL1RAnADRfvR8aFP8uP" />
   <component name="ProjectViewState">
@@ -78,7 +69,7 @@
       <option name="presentableId" value="Default" />
       <updated>1547961760204</updated>
       <workItem from="1547961761338" duration="22792000" />
-      <workItem from="1582092482607" duration="7452000" />
+      <workItem from="1582092482607" duration="8207000" />
     </task>
     <servers />
   </component>
