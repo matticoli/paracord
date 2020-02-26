@@ -6,9 +6,10 @@ import 'react-quill/dist/quill.snow.css'; // ES6
 import fb from './firebase.js';
 import Button from "@material-ui/core/Button";
 import {Input} from "@material-ui/core";
+import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html'; 
+import ReactHtmlParser from 'react-html-parser';
 
-class EditPageView extends Component {
-
+class PreviewPageView extends Component {
     constructor(props) {
         super(props);
 
@@ -71,13 +72,15 @@ class EditPageView extends Component {
             return;
         }
 
-        //TODO: store deltas as array and update per-delta if user did not cause
-        this.state.pageData.ref.onSnapshot(function(doc) {
-            console.log(doc.data());
-            if(this.editor) {
-                // this.editor.updateContents(JSON.parse(doc.data().deltas));
-            }
-        }.bind(this));
+        window.turnPage = () => {
+            console.log(this.state);
+        }
+    }
+
+    htmlDecode(input){
+        var e = document.createElement('div');
+        e.innerHTML = input;
+        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
     }
 
 
@@ -87,33 +90,43 @@ class EditPageView extends Component {
         let puid = this.props.pageData && this.props.pageData.ref.path || "";
         puid = puid.substr(puid.lastIndexOf("/") + 1);
 
-        return (<div>
-            <div className="EditToolbar">
+        let deltas = JSON.parse(this.props && this.props.pageData && this.props.pageData.deltas).ops || [];
+        let conv = new QuillDeltaToHtmlConverter(deltas, {});
+        let text = conv.convert();
+        // text = text.replace(/href=".*"/g, 'onClick="window.turnPage"');
+        let html = ReactHtmlParser(text);
+        console.log(html);
+        console.log(conv);
+        return (
+            <div style={{padding: 10}}>
                 <Button onClick={this.props.returnFunc}>Back</Button>
-                <Button style={{backgroundColor: "red"}}
-                        onClick={this.handleDelete.bind(this)}>Delete</Button>
-                <label>Page Title: </label>
-                <Input className="EditBarInput"
-                       type="text"
-                       defaultValue={this.state.pageData.title || "white"}
-                       onChange = {this.handleTitleChange.bind(this)} />
-                <label>Tile Color: </label>
-                <input className="EditBarInput"
-                       type="color"
-                       defaultValue={this.state.pageData.color || "white"}
-                       onChange = {this.handleColorChange.bind(this)} />
-                <label>Page ID (For Linking): </label>
-                <Input className="EditBarInput"
-                       readOnly="true"
-                       type="text"
-                       value={puid} />
-            </div>
-            <ReactQuill className="ReactQuill"
-                        modules={this.modules}
-                        defaultValue={JSON.parse(this.state.pageData.deltas) || ""}
-                        onChange={this.updatePage.bind(this)} />
-        </div>)
+                {html}
+                {/* <div className="EditToolbar">
+                    <Button onClick={this.props.returnFunc}>Back</Button>
+                    <Button style={{backgroundColor: "red"}}
+                            onClick={this.handleDelete.bind(this)}>Delete</Button>
+                    <label>Page Title: </label>
+                    <Input className="EditBarInput"
+                        type="text"
+                        defaultValue={this.state.pageData.title || "white"}
+                        onChange = {this.handleTitleChange.bind(this)} />
+                    <label>Tile Color: </label>
+                    <input className="EditBarInput"
+                        type="color"
+                        defaultValue={this.state.pageData.color || "white"}
+                        onChange = {this.handleColorChange.bind(this)} />
+                    <label>Page ID (For Linking): </label>
+                    <Input className="EditBarInput"
+                        readOnly="true"
+                        type="text"
+                        value={puid} />
+                </div>
+                <ReactQuill className="ReactQuill"
+                            modules={this.modules}
+                            defaultValue={JSON.parse(this.state.pageData.deltas) || ""}
+                            onChange={this.updatePage.bind(this)} /> */}
+            </div>)
     }
 }
 
-export default EditPageView;
+export default PreviewPageView;

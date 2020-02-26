@@ -8,10 +8,12 @@
     "@material-ui/styles": "^4.9.0",
     "firebase": "^5.11.1",
     "material-ui": "^0.20.2",
+    "quill-delta-to-html": "^0.11.0",
     "re-base": "^4.0.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-draggable": "^4.2.0",
+    "react-html-parser": "^2.0.2",
     "react-lineto": "^3.1.3",
     "react-quill": "^1.3.3",
     "react-scripts": "^3.4.0"

@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import './App.css';
 
 import EditPageView from './EditPageView'
+import PreviewPageView from './PreviewPageView'
 
 import fb from './firebase.js';
 import MenuIcon from '@material-ui/icons/Menu';
@@ -118,13 +119,15 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            drawerOpen: false,
-            showHelp: false,
-            user: null,
-            stories: [],
-            users: [],
-            selectedStory: null,
-            selectedPage: null,
+            drawerOpen: false, // Whether drawer is open
+            showHelp: false, // Whether to show help dialog
+            user: null, // Current logged in user
+            stories: [], // All accessible stories
+            users: [], // All users
+            selectedStory: null, // Current story selected
+            selectedPage: null, // Current edit page
+            previewPage: null, // Current preview page
+            dragTime: 0, // Elapsed drag time
         }
     }
 
@@ -188,7 +191,9 @@ class App extends Component {
     }
 
     handleTileDragStart(event) {
-        // Do nothing
+        this.setState({
+            dragTime: event.timeStamp
+        });
     }
 
     handleTileDrag(event, page) {
@@ -204,6 +209,10 @@ class App extends Component {
     }
 
     handleTileRelease(event, page) {
+        console.log(event.timeStamp + " " + this.state.dragTime);
+        if(event.timeStamp - this.state.dragTime < 200) {
+            return;
+        }
         page.ref.set({
             x: event.pageX < 0 ? 0 : event.pageX,
             y: event.pageY - 200 < 0 ? 0 : event.pageY - 200,
@@ -213,6 +222,12 @@ class App extends Component {
     handlePageSelect(page) {
         this.setState({
             selectedPage: page,
+        });
+    }
+
+    handlePagePreview(page) {
+        this.setState({
+            previewPage: page,
         });
     }
 
@@ -354,10 +369,8 @@ class App extends Component {
                                    onDrag={(evt) => {
                                        this.handleTileDrag.bind(this)(evt, page)
                                    }}
-                                   onClick={() => {
-                                       this.handlePageSelect(page)
-                                   }}
-                                   onDragStart={this.handleTileDragStart.bind(this)}>
+                                   onStart={this.handleTileDragStart.bind(this)}
+                                   onStop={evt => {this.handleTileRelease(evt, page)}}>
                             <Card className={page.ref.path.substring(page.ref.path.lastIndexOf("/") + 1)}
                                  style={styles}>
                                 <h3>{title || "No Title"}</h3>
@@ -365,8 +378,8 @@ class App extends Component {
                                     <Button onClick={() => {
                                         this.handlePageSelect(page)
                                     }} size="small"><EditIcon />Edit</Button>
-                                    <Button disabled onClick={() => {
-                                        this.handlePageSelect(page)
+                                    <Button onClick={() => {
+                                        this.handlePagePreview(page)
                                     }} size="small"><Helpicon />Preview</Button>
                                     <br />
                                 </CardActions>
@@ -384,6 +397,11 @@ class App extends Component {
         let editView = this.state.selectedPage ? (
             <EditPageView pageData={this.state.selectedPage}
                           returnFunc={() => this.handlePageSelect(null)}/>
+        ) : undefined;
+
+        let previewView = this.state.previewPage ? (
+            <PreviewPageView pageData={this.state.previewPage}
+                             returnFunc={() => this.handlePagePreview(null)}/>
         ) : undefined;
 
         return (
@@ -423,7 +441,7 @@ class App extends Component {
                         </div>
                     </Drawer>
                     <div className="App-content">
-						{this.state.user && (editView || pagesTiles || storiesList) || (
+						{this.state.user && (previewView || editView || pagesTiles || storiesList) || (
                             <h3 style={{marginLeft: 30}}><ArrowUpwardIcon /> Please Sign in to continue</h3>
                         )}
 
